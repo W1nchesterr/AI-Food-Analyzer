@@ -1,0 +1,1 @@
+"""Food analyzer application package."""

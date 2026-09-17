@@ -1,0 +1,2 @@
+# Application dependencies; install alongside requirements-ai.txt.
+Pillow==10.2.0
