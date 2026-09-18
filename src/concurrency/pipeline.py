@@ -20,10 +20,10 @@ async def lookup_with_cache(ingredient, provider, cache: NutritionCache, loop):
         try:
             facts = await loop.run_in_executor(None, provider.lookup, original_name)
         except Exception:
-            # simple retry-once for the nutrition-provider failure path
+
             facts = await loop.run_in_executor(None, provider.lookup, original_name)
 
-    # cache.set stays on the event-loop thread (NutritionCache is sync/process-local)
+
     cache.set(original_name, facts)
     return original_name, facts
 
@@ -75,12 +75,20 @@ if __name__ == "__main__":
         def __init__(self, name):
             self.name = name
 
+    from ai import NutritionFacts
+
     class FakeProvider:
-        def lookup(self, name):
+        def lookup(self, name):  # sync, blocking — like the real provider
             time.sleep(2)
             if name == "xiyar":
                 raise ValueError(f"{name} üçün API xetasi")
-            return {"name": name, "kcal": 100}
+            return NutritionFacts(
+                name=name,
+                kcal_per_100g=100,
+                protein_g_per_100g=10,
+                carbs_g_per_100g=20,
+                fat_g_per_100g=5,
+            )
 
     async def main():
         ingredients = [FakeIngredient(n) for n in
