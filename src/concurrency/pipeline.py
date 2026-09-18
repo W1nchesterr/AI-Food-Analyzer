@@ -2,7 +2,7 @@ import asyncio
 import time
 
 from src.services.nutrition_cache import NutritionCache
-
+from ai import NutritionFacts
 
 
 semaphore = asyncio.Semaphore(10)
@@ -75,13 +75,19 @@ if __name__ == "__main__":
         def __init__(self, name):
             self.name = name
 
+
     class FakeProvider:
         def lookup(self, name):
             time.sleep(2)
             if name == "xiyar":
                 raise ValueError(f"{name} üçün API xetasi")
-            return {"name": name, "kcal": 100}
-
+            return NutritionFacts(
+                name=name,
+                kcal_per_100g=100,
+                protein_g_per_100g=10,
+                carbs_g_per_100g=20,
+                fat_g_per_100g=5,
+            )
     async def main():
         ingredients = [FakeIngredient(n) for n in
                         ["toyuq", "düyü", "xiyar", "pomidor", "kartof", "baliq", "yumurta"]]
