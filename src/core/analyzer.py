@@ -39,18 +39,32 @@ class Analyzer:
 
 
 if __name__ == "__main__":
-    from ai import get_nutrition_provider
+    from ai import NutritionFacts, Ingredient
+
+    class FakeProvider:
+        def lookup(self, name):
+            return NutritionFacts(
+                name=name,
+                kcal_per_100g=100,
+                protein_g_per_100g=10,
+                carbs_g_per_100g=20,
+                fat_g_per_100g=5,
+            )
 
     async def main():
-        ai_service = AIService(max_size_bytes=5 * 1024 * 1024)  # 5MB limit
-        provider = get_nutrition_provider()
+        # AIService-i keçirik, birbaşa saxta ingredient siyahısı verir
+        fake_ingredients = [
+            Ingredient(name="çörək", estimated_grams=50, confidence=0.9),
+            Ingredient(name="pendir", estimated_grams=30, confidence=0.9),
+        ]
+
+        provider = FakeProvider()
         cache = NutritionCache(ttl_seconds=86400)
 
-        analyzer = Analyzer(ai_service, provider, cache)
+        facts_by_name, failed = await fetch_all_nutrition(fake_ingredients, provider, cache)
+        totals = compute_totals(fake_ingredients, facts_by_name)
 
-        result = await analyzer.analyze("data/bread_cheese.png")
-        print("İnqrediyentlər:", result["ingredients"])
-        print("Cəmi:", result["totals"])
-        print("Uğursuz:", result["failed"])
+        print("Cəmi:", totals)
+        print("Uğursuz:", failed)
 
     asyncio.run(main())
